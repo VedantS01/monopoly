@@ -14,6 +14,7 @@ class El {
   append(...n) { for (const x of n) if (x != null) this.appendChild(typeof x === 'string' ? new Text(x) : x); }
   get firstChild() { return this.children[0] || null; }
   setAttribute(k, v) { this._attrs[k] = v; }
+  setAttributeNS() {}
   addEventListener() {}
   set textContent(v) { this._text = String(v); this.children = []; }
   get textContent() { return this._text + this.children.map((c) => c.textContent || '').join(''); }
@@ -21,10 +22,14 @@ class El {
   querySelector() { return null; }
 }
 class Text { constructor(t) { this._text = String(t); } get textContent() { return this._text; } }
-globalThis.document = { createElement: (t) => new El(t), createTextNode: (t) => new Text(t) };
+globalThis.document = {
+  createElement: (t) => new El(t),
+  createElementNS: (_ns, t) => new El(t),
+  createTextNode: (t) => new Text(t),
+};
 
 function game() {
-  return createGame([{ name: 'A', token: '🚗', color: '#c0392b' }, { name: 'B', token: '✈️', color: '#2980b9' }], { seed: 1 });
+  return createGame([{ name: 'A', token: 'hat', color: '#c0392b' }, { name: 'B', token: 'car', color: '#2980b9' }], { seed: 1 });
 }
 const noop = () => {};
 
@@ -88,4 +93,20 @@ test('renderModals manage + trade builders render', () => {
   const root2 = new El();
   renderModals(s, noop, root2, { trade: true }, noop);
   assert.ok(root2.children.length >= 1);
+});
+
+test('manage modal shows a Build button only when building is legal', () => {
+  const s = game();
+  s.phase = 'manage';
+  s.properties[1].ownerId = 0; s.properties[3].ownerId = 0; // full brown group, affordable
+  const root = new El();
+  renderModals(s, noop, root, { manage: true }, noop);
+  assert.ok(root.textContent.includes('Build'), 'expected a Build button for a full affordable group');
+
+  const s2 = game();
+  s2.phase = 'manage';
+  s2.properties[1].ownerId = 0; // only one of the brown group -> cannot build
+  const root2 = new El();
+  renderModals(s2, noop, root2, { manage: true }, noop);
+  assert.ok(!root2.textContent.includes('Build'), 'no Build button when the group is incomplete');
 });
