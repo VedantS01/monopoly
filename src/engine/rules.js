@@ -8,6 +8,7 @@ import { applyCardEffect } from './cardeffects.js';
 import { buildHouse, sellHouse } from './build.js';
 import { mortgage, unmortgage } from './mortgage.js';
 import { startAuction, auctionBid, auctionPass } from './auction.js';
+import { proposeTrade, acceptTrade, rejectTrade } from './trade.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -170,6 +171,15 @@ export function applyAction(state, action) {
       break;
     case 'AUCTION_PASS':
       if (s.phase === 'auction') auctionPass(s);
+      break;
+    case 'PROPOSE_TRADE':
+      if (s.phase === 'manage') proposeTrade(s, action.offer);
+      break;
+    case 'ACCEPT_TRADE':
+      acceptTrade(s);
+      break;
+    case 'REJECT_TRADE':
+      rejectTrade(s);
       break;
     case 'END_TURN': {
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
