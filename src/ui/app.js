@@ -5,7 +5,9 @@ import { renderBoard } from './board.js';
 import { renderPanels } from './panels.js';
 import { renderModals } from './modals.js';
 import { animateTransitions } from './animate.js';
-import { autoStep } from './autoplay.js';
+import { actorId, botAction } from '../ai/bot.js';
+import { makePersonality } from '../ai/personalities.js';
+import { makeRng } from '../engine/rng.js';
 import { el, clear } from './dom.js';
 
 const SAVE_KEY = 'world-monopoly-save-v1';
@@ -13,8 +15,11 @@ const MANAGE_ACTIONS = new Set(['BUILD_HOUSE', 'SELL_HOUSE', 'MORTGAGE', 'UNMORT
 const root = document.getElementById('app');
 let state = null;
 let ui = { manage: false, trade: false };
-let autoplay = false;
-let autoTimer = null;
+let spectate = false;       // global Autoplay: every seat plays its bot
+let botTimer = null;
+let botCtx = {};
+let lastActor = -1;
+const rng = makeRng();
 
 function save() { if (state) localStorage.setItem(SAVE_KEY, serialize(state)); }
 function loadSave() {
@@ -36,41 +41,48 @@ function applyAndRender(action) {
 }
 
 export function dispatch(action) {
-  if (action.type === '__TOGGLE_AUTOPLAY') { toggleAutoplay(); return; }
-  if (action.type === '__OPEN_MANAGE') { ui.manage = true; return renderGame(); }
-  if (action.type === '__OPEN_TRADE') { ui.trade = true; return renderGame(); }
-  if (action.type === '__CLOSE') { ui = { manage: false, trade: false }; return renderGame(); }
-  applyAndRender(action);
+  switch (action.type) {
+    case '__TOGGLE_AUTOPLAY': spectate = !spectate; return renderGame();
+    case '__OPEN_MANAGE': ui.manage = true; return renderGame();
+    case '__OPEN_TRADE': ui.trade = true; return renderGame();
+    case '__CLOSE': ui = { manage: false, trade: false }; return renderGame();
+    case '__TOGGLE_SEAT_BOT': state.players[action.playerId].isBot = !state.players[action.playerId].isBot; save(); return renderGame();
+    case '__SET_PERSONALITY': state.players[action.playerId].personality = action.personality; save(); return renderGame();
+    default: applyAndRender(action);
+  }
 }
 
-function toggleAutoplay() {
-  autoplay = !autoplay;
-  renderGame();
-  if (autoplay) autoLoop();
-  else clearTimeout(autoTimer);
+// --- bot driver ---
+function actorIsBot(s) {
+  const id = actorId(s);
+  return id != null && (spectate || s.players[id].isBot);
 }
 
-function autoLoop() {
-  if (!autoplay) return;
-  const action = autoStep(state, Math.random);
-  if (!action) { autoplay = false; renderGame(); return; }
-  applyAndRender(action).then(() => {
-    if (autoplay && state.phase !== 'game-over') autoTimer = setTimeout(autoLoop, 350);
-    else { autoplay = false; renderGame(); }
-  });
+function scheduleBots() {
+  clearTimeout(botTimer);
+  if (!state || state.phase === 'game-over' || !actorIsBot(state)) return;
+  botTimer = setTimeout(runBotStep, 600);
+}
+
+function runBotStep() {
+  if (!state || state.phase === 'game-over' || !actorIsBot(state)) return;
+  const id = actorId(state);
+  if (id !== lastActor) { botCtx = {}; lastActor = id; }
+  const action = botAction(state, makePersonality(state.players[id].personality, rng), rng, botCtx);
+  if (action) applyAndRender(action); // re-renders -> scheduleBots()
 }
 
 function startGame(defs) { state = createGame(defs); ui = { manage: false, trade: false }; save(); renderGame(); }
 function resetToSetup() {
-  autoplay = false; clearTimeout(autoTimer);
+  spectate = false; clearTimeout(botTimer);
   localStorage.removeItem(SAVE_KEY); state = null; ui = { manage: false, trade: false };
   boot();
 }
 
 function autoplayFab() {
   return el('button', {
-    class: 'autoplay-fab' + (autoplay ? ' on' : ''),
-    text: autoplay ? '⏸ Stop autoplay' : '▶ Autoplay',
+    class: 'autoplay-fab' + (spectate ? ' on' : ''),
+    text: spectate ? '⏸ Stop autoplay' : '▶ Autoplay (all bots)',
     onclick: () => dispatch({ type: '__TOGGLE_AUTOPLAY' }),
   });
 }
@@ -83,6 +95,7 @@ function renderGame() {
   root.appendChild(layout);
   renderModals(state, dispatch, root, ui, resetToSetup);
   if (state.phase !== 'game-over') root.appendChild(autoplayFab());
+  scheduleBots();
 }
 
 function boot() {
