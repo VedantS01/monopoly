@@ -18,6 +18,21 @@ function log(state, msg) {
   state.log.push(msg);
 }
 
+function flagDebt(state, debtorId, creditorId) {
+  state.pending.debt = { debtorId, creditorId };
+  state.phase = 'debt';
+}
+
+function clearDebtIfSolvent(state) {
+  if (state.phase === 'debt' && state.pending.debt) {
+    const d = playerById(state, state.pending.debt.debtorId);
+    if (d.money >= 0) {
+      delete state.pending.debt;
+      state.phase = 'manage';
+    }
+  }
+}
+
 function rollPair(seed) {
   const rng = makeRng(seed);
   return [rollDie(rng), rollDie(rng)];
@@ -61,13 +76,14 @@ export function resolveLanding(state, player) {
       const rent = rentFor(state, player.position, state.dice[0] + state.dice[1]);
       payRent(state, player, playerById(state, prop.ownerId), rent);
     }
-    state.phase = 'manage';
+    if (state.phase !== 'debt') state.phase = 'manage';
     return;
   }
   if (space.type === 'tax') {
     player.money -= space.amount;
     log(state, `${player.name} paid ${space.name} of $${space.amount}.`);
-    state.phase = 'manage';
+    if (player.money < 0) flagDebt(state, player.id, null);
+    else state.phase = 'manage';
     return;
   }
   if (space.type === 'chance' || space.type === 'chest') {
@@ -80,7 +96,9 @@ export function resolveLanding(state, player) {
       state.decks[deckName].push(id);
     }
     applyCardEffect(state, player, card);
-    if (state.phase !== 'resolving') state.phase = 'manage';
+    if (state.phase === 'resolving' || state.phase === 'debt') { /* keep */ }
+    else if (player.money < 0) flagDebt(state, player.id, null);
+    else state.phase = 'manage';
     return;
   }
   // corners (Free Parking, Just Visiting) are no-ops
@@ -91,6 +109,7 @@ function payRent(state, payer, owner, amount) {
   payer.money -= amount;
   owner.money += amount;
   log(state, `${payer.name} paid $${amount} rent to ${owner.name}.`);
+  if (payer.money < 0) flagDebt(state, payer.id, owner.id);
 }
 
 export function applyAction(state, action) {
@@ -152,12 +171,15 @@ export function applyAction(state, action) {
       break;
     case 'SELL_HOUSE':
       sellHouse(s, action.pos);
+      clearDebtIfSolvent(s);
       break;
     case 'MORTGAGE':
       mortgage(s, action.pos);
+      clearDebtIfSolvent(s);
       break;
     case 'UNMORTGAGE':
       unmortgage(s, action.pos);
+      clearDebtIfSolvent(s);
       break;
     case 'DECLINE_PROPERTY': {
       const d = s.pending.decision;
@@ -178,6 +200,7 @@ export function applyAction(state, action) {
       break;
     case 'ACCEPT_TRADE':
       acceptTrade(s);
+      clearDebtIfSolvent(s);
       break;
     case 'REJECT_TRADE':
       rejectTrade(s);
@@ -186,6 +209,7 @@ export function applyAction(state, action) {
       declareBankruptcy(s);
       break;
     case 'END_TURN': {
+      if (s.phase === 'debt') break;
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
           && !currentPlayer(s).inJail) {
         s.phase = 'pre-roll';
