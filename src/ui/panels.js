@@ -1,5 +1,25 @@
 import { el, money } from './dom.js';
 import { tokenSVG } from './sprites.js';
+import { PERSONALITIES } from '../ai/personalities.js';
+
+const PERSONALITY_IDS = ['dumb', 'conservative', 'moderate', 'aggressive', 'wildcard'];
+const persLabel = (id) => PERSONALITIES[id]?.label || 'Wildcard';
+
+function seatControls(p, dispatch) {
+  const toggle = el('button', {
+    class: 'btn btn-sm seat-bot', title: 'Toggle human/bot',
+    text: p.isBot ? '🤖' : '👤',
+    onclick: () => dispatch({ type: '__TOGGLE_SEAT_BOT', playerId: p.id }),
+  });
+  const children = [toggle];
+  if (p.isBot) {
+    const sel = el('select', { class: 'seat-pers' },
+      PERSONALITY_IDS.map((id) => el('option', { value: id, ...(id === p.personality ? { selected: 'selected' } : {}) }, persLabel(id))));
+    sel.addEventListener('change', () => dispatch({ type: '__SET_PERSONALITY', playerId: p.id, personality: sel.value }));
+    children.push(sel);
+  }
+  return el('div', { class: 'seat-controls' }, children);
+}
 
 export function renderPanels(state, dispatch) {
   const wrap = el('div', { class: 'side' });
@@ -12,6 +32,7 @@ export function renderPanels(state, dispatch) {
     el('span', { class: 'p-token' }, [tokenSVG(p.token, p.color)]),
     el('span', { class: 'p-name', text: p.name + (p.inJail ? ' 🔒' : '') }),
     el('span', { class: 'p-money', text: money(p.money) }),
+    seatControls(p, dispatch),
   ])));
 
   const actions = el('div', { class: 'actions' }, [

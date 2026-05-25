@@ -189,7 +189,14 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
   border-left: 7px solid var(--line);
   border-radius: 6px; padding: 0.4rem 0.6rem; box-shadow: var(--shadow);
 }
-.p-token { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); }
+.p-token { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); display: inline-flex; }
+.player-card { flex-wrap: wrap; }
+.seat-controls { flex-basis: 100%; display: flex; gap: 4px; align-items: center; margin-top: 2px; }
+.seat-pers { font-family: Georgia, serif; font-size: 0.75rem; padding: 1px 2px; border: 1px solid var(--line); border-radius: 4px; }
+.setup-preview { display: inline-flex; width: 22px; }
+.setup-bot { white-space: nowrap; }
+.setup-pers { font-family: Georgia, serif; padding: 0.2rem; border: 2px solid var(--line); border-radius: 6px; }
+.setup-row { flex-wrap: wrap; }
 .player-card.active { outline: 3px solid var(--gold); }
 .player-card.bankrupt { opacity: 0.45; text-decoration: line-through; }
 .p-token { font-size: 1.3rem; }
