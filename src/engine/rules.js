@@ -3,6 +3,8 @@ import { getSpace } from './board.js';
 import { rentFor } from './rent.js';
 import { rollDie, makeRng } from './rng.js';
 import { payJail, useJailCard, rollForJail } from './jail.js';
+import { getCard } from './cards.js';
+import { applyCardEffect } from './cardeffects.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -63,7 +65,20 @@ export function resolveLanding(state, player) {
     state.phase = 'manage';
     return;
   }
-  // cards, corners are handled in later tasks; default no-op
+  if (space.type === 'chance' || space.type === 'chest') {
+    const deckName = space.type === 'chance' ? 'chance' : 'chest';
+    const id = state.decks[deckName].shift();
+    const card = getCard(id);
+    if (card.effect.kind === 'getOutOfJail') {
+      // keep the card out of the deck while held by the player
+    } else {
+      state.decks[deckName].push(id);
+    }
+    applyCardEffect(state, player, card);
+    if (state.phase !== 'resolving') state.phase = 'manage';
+    return;
+  }
+  // corners (Free Parking, Just Visiting) are no-ops
   state.phase = 'manage';
 }
 
