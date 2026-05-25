@@ -5,6 +5,7 @@ import { rollDie, makeRng } from './rng.js';
 import { payJail, useJailCard, rollForJail } from './jail.js';
 import { getCard } from './cards.js';
 import { applyCardEffect } from './cardeffects.js';
+import { buildHouse, sellHouse } from './build.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -141,6 +142,13 @@ export function applyAction(state, action) {
       rollForJail(s, action.dice ?? rollPair(action.seed));
       break;
     }
+    case 'BUILD_HOUSE':
+      if (s.phase !== 'manage') break;
+      buildHouse(s, action.pos);
+      break;
+    case 'SELL_HOUSE':
+      sellHouse(s, action.pos);
+      break;
     case 'END_TURN': {
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
           && !currentPlayer(s).inJail) {
