@@ -16,6 +16,11 @@
   --grp-yellow: #efbf04;
   --grp-green: #1f6b3b;
   --grp-darkblue: #1f3a93;
+
+  /* legible name colours per group (readable on cream) */
+  --name-brown: #5a3408; --name-lightblue: #1f6f87; --name-pink: #b01e6b;
+  --name-orange: #b35e0c; --name-red: #9b1c1c; --name-yellow: #9a7900;
+  --name-green: #1f6b3b; --name-darkblue: #1f3a93;
 }
 
 * { box-sizing: border-box; }
@@ -111,6 +116,16 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
   min-width: 0;
 }
 .tile-name { font-weight: bold; word-break: break-word; }
+.grp-brown .tile-name { color: var(--name-brown); }
+.grp-lightblue .tile-name { color: var(--name-lightblue); }
+.grp-pink .tile-name { color: var(--name-pink); }
+.grp-orange .tile-name { color: var(--name-orange); }
+.grp-red .tile-name { color: var(--name-red); }
+.grp-yellow .tile-name { color: var(--name-yellow); }
+.grp-green .tile-name { color: var(--name-green); }
+.grp-darkblue .tile-name { color: var(--name-darkblue); }
+.token svg, .p-token svg { display: block; }
+.houses { display: flex; gap: 1px; align-items: flex-end; }
 .tile-price { margin-top: auto; color: #5e5126; }
 .tile-corner, .tile-gotojail { background: var(--cream-dark); align-items: center; justify-content: center; text-align: center; font-size: 0.6rem; }
 .tile-chance, .tile-chest { background: #efe6cf; align-items: center; justify-content: center; text-align: center; }

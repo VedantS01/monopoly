@@ -1,5 +1,6 @@
 import { el } from './dom.js';
 import { BOARD } from '../engine/board.js';
+import { tokenSVG, houseSVG, hotelSVG } from './sprites.js';
 
 // Nostalgic icons for the non-city spaces.
 const ICONS = {
@@ -41,14 +42,19 @@ export function renderBoard(state) {
         const owner = state.players[prop.ownerId];
         tile.appendChild(el('div', { class: 'owner-dot', style: `background:${owner.color}`, title: owner.name }));
         if (prop.mortgaged) tile.appendChild(el('div', { class: 'mortgaged', text: 'M' }));
-        if (prop.houses === 5) tile.appendChild(el('div', { class: 'houses', text: '🏨' }));
-        else if (prop.houses > 0) tile.appendChild(el('div', { class: 'houses', text: '🏠'.repeat(prop.houses) }));
+        if (prop.houses === 5) {
+          tile.appendChild(el('div', { class: 'houses' }, [hotelSVG()]));
+        } else if (prop.houses > 0) {
+          const h = el('div', { class: 'houses' });
+          for (let i = 0; i < prop.houses; i++) h.appendChild(houseSVG());
+          tile.appendChild(h);
+        }
       }
     }
     const here = state.players.filter((p) => !p.bankrupt && p.position === space.pos);
     if (here.length) {
       tile.appendChild(el('div', { class: 'tokens' },
-        here.map((p) => el('span', { class: 'token', title: p.name, 'data-player': p.id, style: `color:${p.color}`, text: p.token }))));
+        here.map((p) => el('span', { class: 'token', title: p.name, 'data-player': p.id }, [tokenSVG(p.token, p.color)]))));
     }
     grid.appendChild(tile);
   }
