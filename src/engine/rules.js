@@ -9,6 +9,7 @@ import { buildHouse, sellHouse } from './build.js';
 import { mortgage, unmortgage } from './mortgage.js';
 import { startAuction, auctionBid, auctionPass } from './auction.js';
 import { proposeTrade, acceptTrade, rejectTrade } from './trade.js';
+import { declareBankruptcy } from './bankruptcy.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -180,6 +181,9 @@ export function applyAction(state, action) {
       break;
     case 'REJECT_TRADE':
       rejectTrade(s);
+      break;
+    case 'DECLARE_BANKRUPTCY':
+      declareBankruptcy(s);
       break;
     case 'END_TURN': {
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
