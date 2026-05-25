@@ -58,7 +58,7 @@ export function dispatch(action) {
       pl.persWeights[action.key] = action.value;
       save(); return renderGame();
     }
-    case '__OPEN_TUNE': ui.tune = action.playerId; return renderGame();
+    case '__OPEN_TUNE': personalityFor(action.playerId); ui.tune = action.playerId; return renderGame();
     default: applyAndRender(action);
   }
 }
