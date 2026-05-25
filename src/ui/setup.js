@@ -26,7 +26,9 @@ export function renderSetup(root, { onStart, onResume, hasSave }) {
         TOKEN_SHAPES.map((id) => el('option', { value: id, ...(id === defaultShape ? { selected: 'selected' } : {}) }, SHAPE_LABELS[id])));
       tokenSel.addEventListener('change', () => { clear(preview); preview.appendChild(tokenSVG(tokenSel.value, color)); });
 
-      const persSel = el('select', { class: 'setup-pers', 'data-i': i, disabled: 'disabled' },
+      // Personality is always selectable: it's the bot used both when this
+      // seat is a Bot and when Autoplay drives a Human seat.
+      const persSel = el('select', { class: 'setup-pers', 'data-i': i, title: 'Bot personality (used by this seat when autoplayed)' },
         PERSONALITY_IDS.map((id) => el('option', { value: id }, persLabel(id))));
       const botToggle = el('button', {
         class: 'btn btn-sm setup-bot', 'data-i': i, 'data-bot': '0', text: '👤 Human',
@@ -34,7 +36,6 @@ export function renderSetup(root, { onStart, onResume, hasSave }) {
           const on = e.target.getAttribute('data-bot') === '1';
           e.target.setAttribute('data-bot', on ? '0' : '1');
           e.target.textContent = on ? '👤 Human' : '🤖 Bot';
-          if (on) persSel.setAttribute('disabled', 'disabled'); else persSel.removeAttribute('disabled');
         },
       });
 

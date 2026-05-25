@@ -55,6 +55,10 @@ export function renderModals(state, dispatch, root, ui = {}, resetToSetup) {
 
   if (ui.manage) overlay(`Manage — ${cur.name}`, [el('p', { class: 'manage-cash', text: 'Cash: ' + money(cur.money) }), renderManage(state, dispatch), closeBtn(dispatch)], root);
   if (ui.trade) overlay('Propose a trade', [renderTrade(state, dispatch), closeBtn(dispatch)], root);
+  if (ui.tune != null) {
+    const tp = state.players[ui.tune];
+    overlay(`Fine-tune — ${tp.name}`, [renderTune(tp, dispatch), closeBtn(dispatch)], root);
+  }
 
   if (state.pending.trade) {
     const t = state.pending.trade;
@@ -81,6 +85,39 @@ export function renderModals(state, dispatch, root, ui = {}, resetToSetup) {
 
 function closeBtn(dispatch) {
   return el('button', { class: 'btn', text: 'Close', onclick: () => dispatch({ type: '__CLOSE' }) });
+}
+
+function renderTune(player, dispatch) {
+  const w = player.persWeights || {};
+  const set = (key, value) => dispatch({ type: '__TUNE_SEAT', playerId: player.id, key, value });
+
+  function numberRow(label, key, step = 1) {
+    const input = el('input', { class: 'tune-input', type: 'number', step, value: w[key] });
+    input.addEventListener('change', () => set(key, Number(input.value)));
+    return el('div', { class: 'tune-row' }, [el('label', { text: label }), input]);
+  }
+  function selectRow(label, key, options) {
+    const sel = el('select', { class: 'tune-input' },
+      options.map((o) => el('option', { value: o, ...(o === w[key] ? { selected: 'selected' } : {}) }, o)));
+    sel.addEventListener('change', () => set(key, sel.value));
+    return el('div', { class: 'tune-row' }, [el('label', { text: label }), sel]);
+  }
+  function boolRow(label, key) {
+    const box = el('input', { type: 'checkbox', ...(w[key] ? { checked: 'checked' } : {}) });
+    box.addEventListener('change', () => set(key, box.checked));
+    return el('div', { class: 'tune-row' }, [el('label', { text: label }), box]);
+  }
+
+  return el('div', { class: 'tune-form' }, [
+    el('p', { class: 'subtitle', text: `Preset: ${player.personality}. Changes apply live.` }),
+    numberRow('Cash buffer ($)', 'cashBuffer', 25),
+    numberRow('Build up to (0–5)', 'buildTo', 1),
+    numberRow('Auction ceiling (× price)', 'auctionCeiling', 0.1),
+    numberRow('Trade accept bias ($)', 'tradeAcceptBias', 25),
+    boolRow('Mortgage other assets to build', 'mortgageToBuild'),
+    selectRow('Trade initiative', 'tradeInitiative', ['none', 'targeted', 'opportunistic']),
+    selectRow('Risk tolerance', 'riskTolerance', ['low', 'medium', 'high']),
+  ]);
 }
 
 function describeSide(label, side) {

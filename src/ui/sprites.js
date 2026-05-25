@@ -23,13 +23,16 @@ function svg(size) {
 
 export function tokenSVG(shape, color) {
   const s = svg(22);
+  // Disc filled with the player's colour (always visible against the cream
+  // board), with a white emblem on top for the token shape.
   const chip = document.createElementNS(NS, 'circle');
   chip.setAttribute('cx', 12); chip.setAttribute('cy', 12); chip.setAttribute('r', 11);
-  chip.setAttribute('fill', '#f7f3e8'); chip.setAttribute('stroke', '#2b2b2b'); chip.setAttribute('stroke-width', 1.5);
+  chip.setAttribute('fill', color || '#2b2b2b');
+  chip.setAttribute('stroke', '#1a1a1a'); chip.setAttribute('stroke-width', 1.5);
   const p = document.createElementNS(NS, 'path');
   p.setAttribute('d', PATHS[shape] || PATHS.hat);
-  p.setAttribute('fill', color || '#2b2b2b');
-  p.setAttribute('stroke', '#2b2b2b'); p.setAttribute('stroke-width', 0.6);
+  p.setAttribute('fill', '#ffffff');
+  p.setAttribute('stroke', 'rgba(0,0,0,0.35)'); p.setAttribute('stroke-width', 0.4);
   s.appendChild(chip); s.appendChild(p);
   return s;
 }

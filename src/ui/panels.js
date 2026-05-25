@@ -8,17 +8,20 @@ const persLabel = (id) => PERSONALITIES[id]?.label || 'Wildcard';
 function seatControls(p, dispatch) {
   const toggle = el('button', {
     class: 'btn btn-sm seat-bot', title: 'Toggle human/bot',
-    text: p.isBot ? '🤖' : '👤',
+    text: p.isBot ? '🤖 Bot' : '👤 Human',
     onclick: () => dispatch({ type: '__TOGGLE_SEAT_BOT', playerId: p.id }),
   });
-  const children = [toggle];
-  if (p.isBot) {
-    const sel = el('select', { class: 'seat-pers' },
-      PERSONALITY_IDS.map((id) => el('option', { value: id, ...(id === p.personality ? { selected: 'selected' } : {}) }, persLabel(id))));
-    sel.addEventListener('change', () => dispatch({ type: '__SET_PERSONALITY', playerId: p.id, personality: sel.value }));
-    children.push(sel);
-  }
-  return el('div', { class: 'seat-controls' }, children);
+  // Personality is always editable — it drives this seat when it's a bot AND
+  // when global Autoplay plays a human seat.
+  const sel = el('select', { class: 'seat-pers', title: 'Bot personality' },
+    PERSONALITY_IDS.map((id) => el('option', { value: id, ...(id === p.personality ? { selected: 'selected' } : {}) }, persLabel(id))));
+  sel.addEventListener('change', () => dispatch({ type: '__SET_PERSONALITY', playerId: p.id, personality: sel.value }));
+  const tune = el('button', {
+    class: 'btn btn-sm seat-tune', title: 'Fine-tune this personality',
+    text: '⚙',
+    onclick: () => dispatch({ type: '__OPEN_TUNE', playerId: p.id }),
+  });
+  return el('div', { class: 'seat-controls' }, [toggle, sel, tune]);
 }
 
 export function renderPanels(state, dispatch) {

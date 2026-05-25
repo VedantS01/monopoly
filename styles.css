@@ -124,7 +124,8 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
 .grp-yellow .tile-name { color: var(--name-yellow); }
 .grp-green .tile-name { color: var(--name-green); }
 .grp-darkblue .tile-name { color: var(--name-darkblue); }
-.token svg, .p-token svg { display: block; }
+.token svg, .p-token svg, .setup-preview svg { display: block; width: 22px; height: 22px; }
+.setup-preview { align-items: center; justify-content: center; }
 .houses { display: flex; gap: 1px; align-items: flex-end; }
 .tile-price { margin-top: auto; color: #5e5126; }
 .tile-corner, .tile-gotojail { background: var(--cream-dark); align-items: center; justify-content: center; text-align: center; font-size: 0.6rem; }
@@ -193,6 +194,11 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
 .player-card { flex-wrap: wrap; }
 .seat-controls { flex-basis: 100%; display: flex; gap: 4px; align-items: center; margin-top: 2px; }
 .seat-pers { font-family: Georgia, serif; font-size: 0.75rem; padding: 1px 2px; border: 1px solid var(--line); border-radius: 4px; }
+.seat-tune { padding: 1px 6px; }
+.tune-form { display: flex; flex-direction: column; gap: 0.4rem; }
+.tune-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border-bottom: 1px dotted var(--cream-dark); padding-bottom: 0.3rem; }
+.tune-row label { flex: 1; }
+.tune-input { width: 120px; padding: 0.3rem; border: 2px solid var(--line); border-radius: 6px; font-family: Georgia, serif; }
 .setup-preview { display: inline-flex; width: 22px; }
 .setup-bot { white-space: nowrap; }
 .setup-pers { font-family: Georgia, serif; padding: 0.2rem; border: 2px solid var(--line); border-radius: 6px; }

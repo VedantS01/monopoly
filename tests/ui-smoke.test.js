@@ -56,7 +56,15 @@ test('renderPanels renders seat controls for human and bot seats', () => {
   s.players[1].isBot = true;
   s.players[1].personality = 'aggressive';
   const node = renderPanels(s, noop);
-  assert.ok(node.children.length > 0); // bot seat adds a personality <select>; must not throw
+  assert.ok(node.children.length > 0); // every seat has a personality <select>; must not throw
+});
+
+test('renderModals renders the live tune form when ui.tune is set', () => {
+  const s = game();
+  s.players[0].persWeights = { cashBuffer: 200, buildTo: 4, auctionCeiling: 0.7, tradeAcceptBias: 50, mortgageToBuild: false, tradeInitiative: 'targeted', riskTolerance: 'medium' };
+  const root = new El();
+  renderModals(s, noop, root, { tune: 0 }, noop);
+  assert.ok(root.textContent.includes('Cash buffer'));
 });
 
 test('renderModals shows a buy modal during resolving', () => {
