@@ -6,6 +6,7 @@ import { payJail, useJailCard, rollForJail } from './jail.js';
 import { getCard } from './cards.js';
 import { applyCardEffect } from './cardeffects.js';
 import { buildHouse, sellHouse } from './build.js';
+import { mortgage, unmortgage } from './mortgage.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -148,6 +149,12 @@ export function applyAction(state, action) {
       break;
     case 'SELL_HOUSE':
       sellHouse(s, action.pos);
+      break;
+    case 'MORTGAGE':
+      mortgage(s, action.pos);
+      break;
+    case 'UNMORTGAGE':
+      unmortgage(s, action.pos);
       break;
     case 'END_TURN': {
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
