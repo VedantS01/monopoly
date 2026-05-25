@@ -9,6 +9,7 @@ import { autoStep } from './autoplay.js';
 import { el, clear } from './dom.js';
 
 const SAVE_KEY = 'world-monopoly-save-v1';
+const MANAGE_ACTIONS = new Set(['BUILD_HOUSE', 'SELL_HOUSE', 'MORTGAGE', 'UNMORTGAGE']);
 const root = document.getElementById('app');
 let state = null;
 let ui = { manage: false, trade: false };
@@ -27,8 +28,8 @@ function applyAndRender(action) {
   const wasManage = ui.manage;
   const { state: next } = applyAction(state, action);
   state = next;
-  ui = { manage: false, trade: false };
-  if (state.phase === 'debt' && wasManage) ui.manage = true; // keep raising cash
+  const keepManage = MANAGE_ACTIONS.has(action.type) && (wasManage || state.phase === 'debt');
+  ui = { manage: keepManage, trade: false };
   save();
   renderGame();
   return animateTransitions(prev, state);

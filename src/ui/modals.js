@@ -1,5 +1,7 @@
 import { el, clear, money } from './dom.js';
 import { getSpace } from '../engine/board.js';
+import { canBuild, canSell } from '../engine/build.js';
+import { canMortgage, canUnmortgage } from '../engine/mortgage.js';
 
 function overlay(title, body, root) {
   const ov = el('div', { class: 'overlay' }, [
@@ -51,7 +53,7 @@ export function renderModals(state, dispatch, root, ui = {}, resetToSetup) {
     ], root);
   }
 
-  if (ui.manage) overlay(`Manage — ${cur.name}`, [renderManage(state, dispatch), closeBtn(dispatch)], root);
+  if (ui.manage) overlay(`Manage — ${cur.name}`, [el('p', { class: 'manage-cash', text: 'Cash: ' + money(cur.money) }), renderManage(state, dispatch), closeBtn(dispatch)], root);
   if (ui.trade) overlay('Propose a trade', [renderTrade(state, dispatch), closeBtn(dispatch)], root);
 
   if (state.pending.trade) {
@@ -95,12 +97,11 @@ function renderManage(state, dispatch) {
     const label = sp.name + (p.mortgaged ? ' (mortgaged)' : '')
       + (p.houses ? ` · ${p.houses === 5 ? 'hotel' : p.houses + 'h'}` : '');
     const row = el('div', { class: 'manage-row' }, [el('span', { class: 'm-name', text: label })]);
-    if (sp.type === 'city' && !p.mortgaged) {
-      row.appendChild(el('button', { class: 'btn btn-sm', text: `Build ${money(sp.houseCost)}`, onclick: () => dispatch({ type: 'BUILD_HOUSE', pos: Number(pos) }) }));
-      if (p.houses > 0) row.appendChild(el('button', { class: 'btn btn-sm', text: 'Sell', onclick: () => dispatch({ type: 'SELL_HOUSE', pos: Number(pos) }) }));
-    }
-    if (!p.mortgaged) row.appendChild(el('button', { class: 'btn btn-sm', text: 'Mortgage', onclick: () => dispatch({ type: 'MORTGAGE', pos: Number(pos) }) }));
-    else row.appendChild(el('button', { class: 'btn btn-sm', text: 'Unmortgage', onclick: () => dispatch({ type: 'UNMORTGAGE', pos: Number(pos) }) }));
+    const id = Number(pos);
+    if (canBuild(state, cur.id, id)) row.appendChild(el('button', { class: 'btn btn-sm', text: `Build ${money(sp.houseCost)}`, onclick: () => dispatch({ type: 'BUILD_HOUSE', pos: id }) }));
+    if (canSell(state, cur.id, id)) row.appendChild(el('button', { class: 'btn btn-sm', text: 'Sell', onclick: () => dispatch({ type: 'SELL_HOUSE', pos: id }) }));
+    if (canMortgage(state, cur.id, id)) row.appendChild(el('button', { class: 'btn btn-sm', text: 'Mortgage', onclick: () => dispatch({ type: 'MORTGAGE', pos: id }) }));
+    if (canUnmortgage(state, cur.id, id)) row.appendChild(el('button', { class: 'btn btn-sm', text: 'Unmortgage', onclick: () => dispatch({ type: 'UNMORTGAGE', pos: id }) }));
     return row;
   }));
 }
