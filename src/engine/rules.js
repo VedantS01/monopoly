@@ -7,6 +7,7 @@ import { getCard } from './cards.js';
 import { applyCardEffect } from './cardeffects.js';
 import { buildHouse, sellHouse } from './build.js';
 import { mortgage, unmortgage } from './mortgage.js';
+import { startAuction, auctionBid, auctionPass } from './auction.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
@@ -155,6 +156,20 @@ export function applyAction(state, action) {
       break;
     case 'UNMORTGAGE':
       unmortgage(s, action.pos);
+      break;
+    case 'DECLINE_PROPERTY': {
+      const d = s.pending.decision;
+      if (!d || d.kind !== 'buy') break;
+      const pos = d.pos;
+      delete s.pending.decision;
+      startAuction(s, pos);
+      break;
+    }
+    case 'AUCTION_BID':
+      if (s.phase === 'auction') auctionBid(s, action.amount);
+      break;
+    case 'AUCTION_PASS':
+      if (s.phase === 'auction') auctionPass(s);
       break;
     case 'END_TURN': {
       if (s.phase === 'manage' && s.doublesCount > 0 && s.doublesCount < 3
