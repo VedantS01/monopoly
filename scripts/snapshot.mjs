@@ -19,7 +19,11 @@ class El {
   querySelector() { return null; }
 }
 class Text { constructor(t) { this._text = String(t); } }
-globalThis.document = { createElement: (t) => new El(t), createTextNode: (t) => new Text(t) };
+globalThis.document = {
+  createElement: (t) => new El(t),
+  createElementNS: (_ns, t) => new El(t),
+  createTextNode: (t) => new Text(t),
+};
 
 const here = dirname(fileURLToPath(import.meta.url));
 const { createGame } = await import(join(here, '../src/engine/state.js'));
@@ -40,9 +44,9 @@ function html(node) {
 
 // Build a visually rich mid-game state.
 const s = createGame([
-  { name: 'Ada', token: '🎩', color: '#c0392b' },
-  { name: 'Ben', token: '🚗', color: '#2980b9' },
-  { name: 'Cleo', token: '🐕', color: '#27ae60' },
+  { name: 'Ada', token: 'hat', color: '#c0392b' },
+  { name: 'Ben', token: 'car', color: '#2980b9', isBot: true, personality: 'aggressive' },
+  { name: 'Cleo', token: 'dog', color: '#27ae60', isBot: true, personality: 'conservative' },
 ], { seed: 5 });
 s.dice = [3, 4];
 s.players[0].position = 39; s.players[0].money = 1740;
