@@ -51,6 +51,14 @@ test('renderSetup populates the root', () => {
   assert.ok(root.children.length > 0);
 });
 
+test('renderPanels renders seat controls for human and bot seats', () => {
+  const s = game();
+  s.players[1].isBot = true;
+  s.players[1].personality = 'aggressive';
+  const node = renderPanels(s, noop);
+  assert.ok(node.children.length > 0); // bot seat adds a personality <select>; must not throw
+});
+
 test('renderModals shows a buy modal during resolving', () => {
   const s = game();
   s.phase = 'resolving';
