@@ -3,6 +3,30 @@ import assert from 'node:assert/strict';
 import { createGame } from '../src/engine/state.js';
 import { applyAction } from '../src/engine/rules.js';
 import { groupPositions } from '../src/engine/board.js';
+import { canBuild, canSell } from '../src/engine/build.js';
+
+test('canBuild reflects full-group, even-build, bank, and affordability rules', () => {
+  let s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });
+  s.phase = 'manage';
+  s.properties[1].ownerId = 0;
+  assert.equal(canBuild(s, 0, 1), false);
+  s.properties[3].ownerId = 0;
+  assert.equal(canBuild(s, 0, 1), true);
+  s.properties[1].houses = 1;
+  assert.equal(canBuild(s, 0, 1), false);
+  assert.equal(canBuild(s, 0, 3), true);
+  s.bank.houses = 0;
+  assert.equal(canBuild(s, 0, 3), false);
+});
+
+test('canSell reflects even-sell and ownership', () => {
+  let s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });
+  s.properties[1].ownerId = 0; s.properties[3].ownerId = 0;
+  s.properties[1].houses = 2; s.properties[3].houses = 1;
+  assert.equal(canSell(s, 0, 1), true);
+  assert.equal(canSell(s, 0, 3), false);
+  assert.equal(canSell(s, 0, 5), false);
+});
 
 function ownsBrown() {
   const s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });

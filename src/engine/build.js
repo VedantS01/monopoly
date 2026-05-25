@@ -1,34 +1,37 @@
 import { getSpace, groupPositions } from './board.js';
-import { currentPlayer } from './state.js';
+import { currentPlayer, playerById } from './state.js';
 import { log } from './rules.js';
 
-function ownsFullGroup(state, player, group) {
-  return groupPositions(group).every(
-    (p) => state.properties[p].ownerId === player.id && !state.properties[p].mortgaged,
-  );
+export function canBuild(state, playerId, pos) {
+  const space = getSpace(pos);
+  const prop = state.properties[pos];
+  const player = playerById(state, playerId);
+  if (!space || space.type !== 'city') return false;
+  if (!prop || prop.ownerId !== playerId) return false;
+  const group = groupPositions(space.group);
+  if (!group.every((p) => state.properties[p].ownerId === playerId && !state.properties[p].mortgaged)) return false;
+  if (prop.houses >= 5) return false;
+  if (prop.houses > Math.min(...group.map((p) => state.properties[p].houses))) return false;
+  if (prop.houses === 4 ? state.bank.hotels <= 0 : state.bank.houses <= 0) return false;
+  return player.money >= space.houseCost;
+}
+
+export function canSell(state, playerId, pos) {
+  const space = getSpace(pos);
+  const prop = state.properties[pos];
+  if (!space || space.type !== 'city' || !prop || prop.ownerId !== playerId || prop.houses <= 0) return false;
+  const group = groupPositions(space.group);
+  if (prop.houses < Math.max(...group.map((p) => state.properties[p].houses))) return false;
+  if (prop.houses === 5 && state.bank.houses < 4) return false;
+  return true;
 }
 
 export function buildHouse(state, pos) {
   const player = currentPlayer(state);
+  if (!canBuild(state, player.id, pos)) return;
   const space = getSpace(pos);
   const prop = state.properties[pos];
-  if (space.type !== 'city') return;
-  if (prop.ownerId !== player.id) return;
-  if (!ownsFullGroup(state, player, space.group)) return;
-  if (prop.houses >= 5) return;
-
-  // even-build: cannot exceed the group minimum
-  const group = groupPositions(space.group);
-  const minHouses = Math.min(...group.map((p) => state.properties[p].houses));
-  if (prop.houses > minHouses) return;
-
   const buyingHotel = prop.houses === 4;
-  if (buyingHotel) {
-    if (state.bank.hotels <= 0) return;
-  } else if (state.bank.houses <= 0) {
-    return;
-  }
-  if (player.money < space.houseCost) return;
 
   player.money -= space.houseCost;
   prop.houses += 1;
@@ -44,18 +47,12 @@ export function buildHouse(state, pos) {
 
 export function sellHouse(state, pos) {
   const player = currentPlayer(state);
+  if (!canSell(state, player.id, pos)) return;
   const space = getSpace(pos);
   const prop = state.properties[pos];
-  if (prop.ownerId !== player.id || prop.houses <= 0) return;
-
-  // even-sell: cannot drop below the group maximum
-  const group = groupPositions(space.group);
-  const maxHouses = Math.max(...group.map((p) => state.properties[p].houses));
-  if (prop.houses < maxHouses) return;
-
   const wasHotel = prop.houses === 5;
+
   if (wasHotel) {
-    if (state.bank.houses < 4) return; // can't break a hotel without 4 houses
     state.bank.hotels += 1;
     state.bank.houses -= 4;
   } else {
