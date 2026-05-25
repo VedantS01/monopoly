@@ -140,12 +140,17 @@ export function botAction(state, personality, rng = Math.random, ctx = {}) {
 
     case 'manage': {
       const buffer = effectiveBuffer(state, id, personality);
+      // Only unmortgage properties in a complete group (restores a monopoly's
+      // rent). Never unmortgage a spare — that would undo a mortgage-to-build
+      // and oscillate.
       for (const [pos, pr] of Object.entries(state.properties)) {
         const p = Number(pos);
-        if (pr.ownerId === id && pr.mortgaged && canUnmortgage(state, id, p)) {
-          const cost = Math.floor(getSpace(p).price / 2) * 1.1;
-          if (me.money - cost >= buffer) return { type: 'UNMORTGAGE', pos: p };
-        }
+        if (pr.ownerId !== id || !pr.mortgaged || !canUnmortgage(state, id, p)) continue;
+        const grp = getSpace(p).group;
+        const isMonopoly = grp && groupPositions(grp).every((q) => state.properties[q].ownerId === id);
+        if (!isMonopoly) continue;
+        const cost = Math.floor(getSpace(p).price / 2) * 1.1;
+        if (me.money - cost >= buffer) return { type: 'UNMORTGAGE', pos: p };
       }
       const build = bestBuild(state, id, personality);
       if (build != null) {

@@ -89,6 +89,44 @@ test('botAction in debt with no assets declares bankruptcy', () => {
   assert.equal(botAction(s, makePersonality('moderate'), makeRng(1), {}).type, 'DECLARE_BANKRUPTCY');
 });
 
+test('a rejected trade is not re-proposed within the same turn', () => {
+  // Driver rule: per-turn ctx resets only at pre-roll, NOT on every actor change.
+  let s = createGame([{ name: 'A', token: 'hat' }, { name: 'B', token: 'car' }], { seed: 1 });
+  s.properties[1].ownerId = 0; // A is one short of brown
+  s.properties[3].ownerId = 1; // B owns the missing brown (B will reject)
+  s.phase = 'manage';
+  const persons = [makePersonality('aggressive'), makePersonality('conservative')];
+  const rng = makeRng(1);
+  let ctx = {};
+  let proposalsByA = 0;
+  for (let i = 0; i < 60 && s.currentPlayerIndex === 0; i++) {
+    const id = actorId(s);
+    if (s.phase === 'pre-roll') ctx = {}; // turn boundary only
+    const a = botAction(s, persons[id], rng, ctx);
+    if (!a) break;
+    if (a.type === 'PROPOSE_TRADE' && id === 0) proposalsByA++;
+    ({ state: s } = applyAction(s, a));
+  }
+  assert.ok(proposalsByA <= 1, `A re-proposed ${proposalsByA} times in one turn`);
+});
+
+test('aggressive does not oscillate mortgage/unmortgage when funding a build', () => {
+  let s = g();
+  s.properties[1].ownerId = 0; s.properties[3].ownerId = 0; // full brown group
+  s.properties[6].ownerId = 0;                              // spare lightblue (single)
+  s.players[0].money = 100;
+  s.players[1].money = 200; // keep player 0 from being "behind"
+  s.phase = 'manage';
+  const pers = makePersonality('aggressive');
+  const a1 = botAction(s, pers, makeRng(1), {});
+  assert.equal(a1.type, 'MORTGAGE');  // mortgages the spare to fund a build
+  assert.equal(a1.pos, 6);
+  ({ state: s } = applyAction(s, { type: 'MORTGAGE', pos: 6 }));
+  const a2 = botAction(s, pers, makeRng(1), {});
+  assert.notEqual(a2.type, 'UNMORTGAGE'); // must not immediately undo it
+  assert.equal(a2.type, 'BUILD_HOUSE');
+});
+
 test('a 4-personality game autoplays without throwing and stays valid', () => {
   let s = createGame([
     { name: 'Dumb', token: 'hat' }, { name: 'Cons', token: 'car' },
