@@ -17,6 +17,8 @@ export function createGame(playerDefs, { seed } = {}) {
     jailRolls: 0,
     getOutCards: 0,
     bankrupt: false,
+    isBot: p.isBot ?? false,
+    personality: p.personality ?? 'dumb',
   }));
 
   const properties = {};

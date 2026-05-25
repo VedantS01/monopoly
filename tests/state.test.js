@@ -41,6 +41,17 @@ test('currentPlayer returns the active player', () => {
   assert.equal(currentPlayer(s).name, 'Ada');
 });
 
+test('createGame stores isBot and personality from defs (defaults dumb/human)', () => {
+  const s = createGame([
+    { name: 'A', token: 'x' },
+    { name: 'B', token: 'y', isBot: true, personality: 'aggressive' },
+  ]);
+  assert.equal(s.players[0].isBot, false);
+  assert.equal(s.players[0].personality, 'dumb');
+  assert.equal(s.players[1].isBot, true);
+  assert.equal(s.players[1].personality, 'aggressive');
+});
+
 test('serialize/deserialize round-trips', () => {
   const s = createGame(players, { seed: 7 });
   const back = deserialize(serialize(s));
