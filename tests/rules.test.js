@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createGame, currentPlayer } from '../src/engine/state.js';
+import { createGame, currentPlayer, serialize } from '../src/engine/state.js';
 import { applyAction } from '../src/engine/rules.js';
 
 function game() {
@@ -79,4 +79,11 @@ test('landing on a tax space charges the fixed amount', () => {
   ({ state: s } = applyAction(s, { type: 'ROLL', dice: [2, 2] }));
   assert.equal(s.players[0].money, 1300);
   assert.equal(s.phase, 'manage');
+});
+
+test('applyAction never mutates its input state', () => {
+  const s = game();
+  const snapshot = serialize(s);
+  applyAction(s, { type: 'ROLL', dice: [2, 3] });
+  assert.equal(serialize(s), snapshot);
 });
