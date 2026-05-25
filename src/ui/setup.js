@@ -1,6 +1,7 @@
 import { el, clear } from './dom.js';
 
-const TOKENS = ['🚗', '✈️', '🚢', '🚂', '🧳', '⛵'];
+// Classic Monopoly-style tokens for that nostalgic feel.
+const TOKENS = ['🎩', '🚗', '🐕', '🚢', '👢', '🐈', '🛞', '🧵'];
 const COLORS = ['#c0392b', '#2980b9', '#27ae60', '#f39c12', '#8e44ad', '#16a085'];
 
 export function renderSetup(root, { onStart, onResume, hasSave }) {

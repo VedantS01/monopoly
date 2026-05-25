@@ -6,6 +6,7 @@ export function renderPanels(state, dispatch) {
   const players = el('div', { class: 'players' }, state.players.map((p) => el('div', {
     class: 'player-card' + (p.id === state.currentPlayerIndex ? ' active' : '') + (p.bankrupt ? ' bankrupt' : ''),
     style: `border-left-color:${p.color}`,
+    'data-player': p.id,
   }, [
     el('span', { class: 'p-token', text: p.token }),
     el('span', { class: 'p-name', text: p.name + (p.inJail ? ' 🔒' : '') }),

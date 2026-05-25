@@ -40,9 +40,9 @@ function html(node) {
 
 // Build a visually rich mid-game state.
 const s = createGame([
-  { name: 'Ada', token: '🚗', color: '#c0392b' },
-  { name: 'Ben', token: '✈️', color: '#2980b9' },
-  { name: 'Cleo', token: '🚢', color: '#27ae60' },
+  { name: 'Ada', token: '🎩', color: '#c0392b' },
+  { name: 'Ben', token: '🚗', color: '#2980b9' },
+  { name: 'Cleo', token: '🐕', color: '#27ae60' },
 ], { seed: 5 });
 s.dice = [3, 4];
 s.players[0].position = 39; s.players[0].money = 1740;

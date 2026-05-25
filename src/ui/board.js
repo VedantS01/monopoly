@@ -1,6 +1,17 @@
 import { el } from './dom.js';
 import { BOARD } from '../engine/board.js';
 
+// Nostalgic icons for the non-city spaces.
+const ICONS = {
+  airport: '✈️', utility: '💡', tax: '💸', chance: '❓', chest: '🎁', gotojail: '🚓',
+};
+function cornerIcon(space) {
+  if (space.name === 'GO') return '⬅️';
+  if (space.name.startsWith('Jail')) return '🔒';
+  if (space.name === 'Free Parking') return '🅿️';
+  return '';
+}
+
 // Map board position (0..39) to a cell [row, col] on an 11x11 ring.
 function cell(pos) {
   if (pos <= 10) return { row: 11, col: 11 - pos };          // bottom row, GO at bottom-right
@@ -16,8 +27,11 @@ export function renderBoard(state) {
     const tile = el('div', {
       class: `tile tile-${space.type}` + (space.group ? ` grp-${space.group}` : ''),
       style: `grid-row:${row};grid-column:${col}`,
+      'data-pos': space.pos,
     });
     if (space.type === 'city') tile.appendChild(el('div', { class: 'band' }));
+    const icon = ICONS[space.type] || cornerIcon(space);
+    if (icon) tile.appendChild(el('div', { class: 'tile-icon', text: icon }));
     tile.appendChild(el('div', { class: 'tile-name', text: space.name }));
     if (space.price != null) {
       const prop = state.properties[space.pos];
@@ -34,7 +48,7 @@ export function renderBoard(state) {
     const here = state.players.filter((p) => !p.bankrupt && p.position === space.pos);
     if (here.length) {
       tile.appendChild(el('div', { class: 'tokens' },
-        here.map((p) => el('span', { class: 'token', title: p.name, style: `color:${p.color}`, text: p.token }))));
+        here.map((p) => el('span', { class: 'token', title: p.name, 'data-player': p.id, style: `color:${p.color}`, text: p.token }))));
     }
     grid.appendChild(tile);
   }

@@ -129,30 +129,52 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
 .owner-dot { position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--line); }
 .mortgaged { position: absolute; top: 2px; left: 2px; font-weight: bold; color: var(--red); font-size: 0.6rem; }
 .houses { font-size: 0.6rem; }
+.tile-icon { font-size: 1rem; line-height: 1; text-align: center; }
+.tile-corner .tile-icon, .tile-gotojail .tile-icon { font-size: 1.4rem; }
+
 .tokens { display: flex; flex-wrap: wrap; gap: 1px; margin-top: 2px; }
-.token { font-size: 0.85rem; line-height: 1; }
+.token {
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
 
 .board-center {
-  background: var(--cream);
+  background:
+    repeating-linear-gradient(45deg, rgba(31, 107, 59, 0.05) 0 14px, transparent 14px 28px),
+    var(--cream);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
-  transform: rotate(-45deg);
+  gap: 0.3rem;
+  border: 2px solid var(--line);
 }
-.center-logo { color: var(--red); font-weight: bold; font-size: 1.6rem; letter-spacing: 1px; text-align: center; }
-.center-sub { color: var(--green); font-style: italic; }
+.center-logo {
+  color: var(--cream);
+  background: var(--red);
+  border: 2px solid var(--line);
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1.5rem;
+  letter-spacing: 1.5px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.center-sub { color: var(--green); font-style: italic; letter-spacing: 2px; text-transform: uppercase; font-size: 0.75rem; }
 
 /* ---------- side panel ---------- */
 .side { display: flex; flex-direction: column; gap: 0.8rem; }
 .players { display: flex; flex-direction: column; gap: 0.4rem; }
 .player-card {
+  position: relative;
   display: flex; align-items: center; gap: 0.5rem;
   background: var(--cream); border: 2px solid var(--cream-dark);
   border-left: 7px solid var(--line);
   border-radius: 6px; padding: 0.4rem 0.6rem; box-shadow: var(--shadow);
 }
+.p-token { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); }
 .player-card.active { outline: 3px solid var(--gold); }
 .player-card.bankrupt { opacity: 0.45; text-decoration: line-through; }
 .p-token { font-size: 1.3rem; }
@@ -194,6 +216,60 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
 .give-props, .want-props { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.3rem; border: 1px solid var(--cream-dark); border-radius: 6px; }
 .give-props.empty, .want-props.empty { color: #8a7c52; font-style: italic; }
 .tradeprop { display: flex; align-items: center; gap: 0.3rem; }
+
+/* ---------- animations ---------- */
+.fly-token {
+  position: fixed;
+  z-index: 50;
+  font-size: 1.5rem;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: left 0.11s linear, top 0.11s linear;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+.fly-coin {
+  position: fixed;
+  z-index: 50;
+  font-size: 1.4rem;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1), top 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.money-badge {
+  position: absolute;
+  right: 8px;
+  top: -2px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  pointer-events: none;
+  z-index: 6;
+  animation: rise 1.4s ease-out forwards;
+}
+.money-badge.pos { color: var(--green); }
+.money-badge.neg { color: var(--red); }
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(6px); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-26px); }
+}
+
+.autoplay-fab {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 20;
+  font-family: Georgia, serif;
+  font-size: 0.95rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid #0d3b20;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--cream);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.autoplay-fab.on { background: var(--red); border-color: #5e0f0f; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: var(--shadow); } 50% { box-shadow: 0 0 0 6px rgba(155, 28, 28, 0.25); } }
 
 /* ---------- responsive: stack board over panel, sticky actions ---------- */
 @media (max-width: 820px) {
