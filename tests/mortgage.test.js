@@ -3,6 +3,25 @@ import assert from 'node:assert/strict';
 import { createGame } from '../src/engine/state.js';
 import { applyAction } from '../src/engine/rules.js';
 
+import { canMortgage, canUnmortgage } from '../src/engine/mortgage.js';
+
+test('canMortgage requires ownership, not already mortgaged, no buildings in group', () => {
+  let s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });
+  s.properties[1].ownerId = 0; s.properties[3].ownerId = 0;
+  assert.equal(canMortgage(s, 0, 1), true);
+  s.properties[1].houses = 1;
+  assert.equal(canMortgage(s, 0, 3), false);
+  assert.equal(canMortgage(s, 1, 1), false);
+});
+
+test('canUnmortgage requires mortgaged + affordable', () => {
+  let s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });
+  s.properties[39].ownerId = 0; s.properties[39].mortgaged = true;
+  assert.equal(canUnmortgage(s, 0, 39), true);
+  s.players[0].money = 10;
+  assert.equal(canUnmortgage(s, 0, 39), false);
+});
+
 function owns(pos) {
   const s = createGame([{ name: 'A', token: 'x' }, { name: 'B', token: 'y' }], { seed: 1 });
   s.properties[pos].ownerId = 0;
