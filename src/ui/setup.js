@@ -1,8 +1,11 @@
 import { el, clear } from './dom.js';
+import { tokenSVG, TOKEN_SHAPES } from './sprites.js';
 
-// Classic Monopoly-style tokens for that nostalgic feel.
-const TOKENS = ['🎩', '🚗', '🐕', '🚢', '👢', '🐈', '🛞', '🧵'];
 const COLORS = ['#c0392b', '#2980b9', '#27ae60', '#f39c12', '#8e44ad', '#16a085'];
+const SHAPE_LABELS = {
+  hat: 'Top hat', car: 'Car', dog: 'Dog', ship: 'Ship',
+  boot: 'Boot', cat: 'Cat', thimble: 'Thimble', barrow: 'Wheelbarrow',
+};
 
 export function renderSetup(root, { onStart, onResume, hasSave }) {
   clear(root);
@@ -13,11 +16,16 @@ export function renderSetup(root, { onStart, onResume, hasSave }) {
   function rebuild() {
     clear(rowsWrap);
     for (let i = 0; i < count; i++) {
+      const color = COLORS[i % COLORS.length];
+      const defaultShape = TOKEN_SHAPES[i % TOKEN_SHAPES.length];
+      const preview = el('span', { class: 'setup-preview' }, [tokenSVG(defaultShape, color)]);
+      const tokenSel = el('select', { class: 'setup-token', 'data-i': i },
+        TOKEN_SHAPES.map((id) => el('option', { value: id, ...(id === defaultShape ? { selected: 'selected' } : {}) }, SHAPE_LABELS[id])));
+      tokenSel.addEventListener('change', () => { clear(preview); preview.appendChild(tokenSVG(tokenSel.value, color)); });
       rowsWrap.appendChild(el('div', { class: 'setup-row' }, [
-        el('span', { class: 'setup-swatch', style: `background:${COLORS[i % COLORS.length]}` }),
+        preview,
         el('input', { class: 'setup-name', type: 'text', value: `Player ${i + 1}`, 'data-i': i, maxlength: 14 }),
-        el('select', { class: 'setup-token', 'data-i': i },
-          TOKENS.map((t, ti) => el('option', { value: t, ...(ti === i ? { selected: 'selected' } : {}) }, t))),
+        tokenSel,
       ]));
     }
   }
