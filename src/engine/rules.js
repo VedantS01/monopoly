@@ -51,6 +51,12 @@ export function resolveLanding(state, player) {
     state.phase = 'manage';
     return;
   }
+  if (space.type === 'tax') {
+    player.money -= space.amount;
+    log(state, `${player.name} paid ${space.name} of $${space.amount}.`);
+    state.phase = 'manage';
+    return;
+  }
   // cards, corners are handled in later tasks; default no-op
   state.phase = 'manage';
 }

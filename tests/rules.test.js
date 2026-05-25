@@ -72,3 +72,11 @@ test('three consecutive doubles sends the player to jail immediately', () => {
   assert.equal(s.players[0].position, 10);
   assert.equal(s.phase, 'manage');
 });
+
+test('landing on a tax space charges the fixed amount', () => {
+  let s = game();
+  s.players[0].position = 0;
+  ({ state: s } = applyAction(s, { type: 'ROLL', dice: [2, 2] }));
+  assert.equal(s.players[0].money, 1300);
+  assert.equal(s.phase, 'manage');
+});
