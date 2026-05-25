@@ -1,4 +1,5 @@
 import { el, money } from './dom.js';
+import { tokenSVG } from './sprites.js';
 
 export function renderPanels(state, dispatch) {
   const wrap = el('div', { class: 'side' });
@@ -8,7 +9,7 @@ export function renderPanels(state, dispatch) {
     style: `border-left-color:${p.color}`,
     'data-player': p.id,
   }, [
-    el('span', { class: 'p-token', text: p.token }),
+    el('span', { class: 'p-token' }, [tokenSVG(p.token, p.color)]),
     el('span', { class: 'p-name', text: p.name + (p.inJail ? ' 🔒' : '') }),
     el('span', { class: 'p-money', text: money(p.money) }),
   ])));
