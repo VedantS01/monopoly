@@ -2,12 +2,18 @@ import { clone, currentPlayer, playerById } from './state.js';
 import { getSpace } from './board.js';
 import { rentFor } from './rent.js';
 import { rollDie, makeRng } from './rng.js';
+import { payJail, useJailCard, rollForJail } from './jail.js';
 
 const GO_SALARY = 200;
 const JAIL_POS = 10;
 
 function log(state, msg) {
   state.log.push(msg);
+}
+
+function rollPair(seed) {
+  const rng = makeRng(seed);
+  return [rollDie(rng), rollDie(rng)];
 }
 
 // Move a player to an absolute position, paying GO salary if they pass it.
@@ -103,6 +109,21 @@ export function applyAction(state, action) {
       log(s, `${player.name} bought ${space.name} for $${space.price}.`);
       delete s.pending.decision;
       s.phase = 'manage';
+      break;
+    }
+    case 'PAY_JAIL': {
+      if (!currentPlayer(s).inJail) break;
+      payJail(s, action.dice ?? rollPair(action.seed));
+      break;
+    }
+    case 'USE_JAIL_CARD': {
+      if (!currentPlayer(s).inJail) break;
+      useJailCard(s, action.dice ?? rollPair(action.seed));
+      break;
+    }
+    case 'ROLL_FOR_JAIL': {
+      if (!currentPlayer(s).inJail) break;
+      rollForJail(s, action.dice ?? rollPair(action.seed));
       break;
     }
     case 'END_TURN': {
